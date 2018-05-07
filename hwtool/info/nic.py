@@ -21,14 +21,6 @@ from collections import (
 from dmi.parser.type import (
     DMIType,
 )
-from ethtool import (
-    Ethtool,
-)
-from sysfs.bus.pci.device import(
-    PCIDevice,
-)
-
-from procfs.net.dev import fetch as fetch_network_devices
 
 from .base import (
     BaseHardwareModel,
@@ -50,6 +42,15 @@ class NIC(BaseHardwareModel):
     FIELD_SPEED = 'speed'
 
     def _fetch_info_linux(self):
+        from ethtool import (
+            Ethtool,
+        )
+        from sysfs.bus.pci.device import(
+            PCIDevice,
+        )
+
+        from procfs.net.dev import fetch as fetch_network_devices
+
         nics = []
 
         with Ethtool() as ethtool:
