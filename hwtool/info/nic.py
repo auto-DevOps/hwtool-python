@@ -127,3 +127,48 @@ class NIC(BaseHardwareModel):
                 nics.append(nic)
 
         return nics
+
+    def _fetch_info_windows(self):
+        nics = []
+
+        for adapter in self.wmi.Win32_NetworkAdapter():
+            if not adapter.PhysicalAdapter:
+                continue
+
+            confs = self.wmi.Win32_NetworkAdapterConfiguration(Index=adapter.Index)
+            conf = confs[0] if confs else None
+
+            #settings = self.wmi.Win32_NetworkAdapterSetting(Index=adapter.Index)
+            #setting = settings[0] if settings else None
+            #print(setting)
+
+            mac = adapter.MACAddress
+            if mac:
+                mac = mac.lower()
+
+            speed = adapter.Speed
+            if speed:
+                speed = int(speed) // 1000000
+
+            mtu = conf.MTU if conf else None
+            ips = [
+                ip
+                for ip in ((conf.IPAddress or ()) if conf else ())
+                if ':' not in ip
+            ]
+
+            nic = OrderedDict([
+                (self.FIELD_IFACE, adapter.NetConnectionId),
+                (self.FIELD_BRAND, adapter.ProductName),
+                (self.FIELD_SPEED, speed),
+                (self.FIELD_BUS, None),
+                (self.FIELD_MAC, mac),
+                (self.FIELD_IPS, ips),
+                (self.FIELD_MTU, mtu),
+                (self.FIELD_UP, bool(adapter.MACAddress)),
+                (self.FIELD_LINKED, adapter.NetEnabled),
+            ])
+
+            nics.append(nic)
+
+        return nics

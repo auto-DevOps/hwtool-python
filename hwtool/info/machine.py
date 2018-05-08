@@ -18,6 +18,9 @@ import platform
 from collections import (
     OrderedDict,
 )
+from uuid import (
+    UUID,
+)
 
 from dmi.parser.type import (
     DMIType,
@@ -36,6 +39,7 @@ class Machine(BaseHardwareModel):
     FIELD_MANUFACTURER = 'manufacturer'
     FIELD_PRODUCT = 'product'
     FIELD_SERIAL_NUMBER = 'serial_number'
+    FIELD_UUID = 'uuid'
     FIELD_ARCHITECTURE = 'architecture'
 
     property_fields = (
@@ -43,6 +47,7 @@ class Machine(BaseHardwareModel):
         FIELD_MANUFACTURER,
         FIELD_PRODUCT,
         FIELD_SERIAL_NUMBER,
+        FIELD_UUID,
         FIELD_ARCHITECTURE,
     )
 
@@ -79,6 +84,18 @@ class Machine(BaseHardwareModel):
                 sn = None
 
         return sn
+
+    @property
+    def uuid(self):
+        uuid = self.lookup_dmi(
+            _type=DMIType.TYPE_SYSTEM,
+            field='uuid',
+        )
+
+        if uuid:
+            uuid = str(UUID(bytes=uuid))
+
+        return uuid
 
     @property
     def architecture(self):

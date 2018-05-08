@@ -35,6 +35,10 @@ class BaseHardwareModel(object):
 
     system = System()
 
+    if system.os_type == 'windows':
+        import wmi
+        wmi = wmi.WMI()
+
     DMI_TABLE = fetch_dmi()
 
     @eval_now
@@ -60,6 +64,8 @@ class BaseHardwareModel(object):
     def _fetch_info(self):
         if self.system.is_linux:
             return self._fetch_info_linux()
+        elif self.system.is_windows:
+            return self._fetch_info_windows()
 
     def fetch_info(self):
         self.info = info = self._fetch_info()

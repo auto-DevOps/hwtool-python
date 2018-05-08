@@ -36,12 +36,13 @@ class Memory(BaseHardwareModel):
     FIELD_SLOTS_USED = 'slots_used'
     FIELD_DIVICE_BRIEF = 'device_brief'
     FIELD_DEVICES = 'devices'
+    FIELD_OS_TOTAL = 'os_total'
 
     FIELD_DEVICE_SIZE = 'size'
     FIELD_DEVICE_MANUFACTUER = 'manufacturer'
     FIELD_DEVICE_SPEED = 'speed'
 
-    def _fetch_info(self):
+    def _fetch_info_bios(self):
         dmi_memory_device = self.DMI_MAPPING[DMIType.TYPE_MEMORY_DEVICE]
         slots = len(dmi_memory_device)
 
@@ -81,5 +82,24 @@ class Memory(BaseHardwareModel):
             (self.FIELD_DIVICE_BRIEF, device_brief),
             (self.FIELD_DEVICES, devices),
         ])
+
+        return memory
+
+    def _fetch_info_linux(self):
+        memory = self._fetch_info_bios()
+        return memory
+
+    def _fetch_info_windows(self):
+        memory = self._fetch_info_bios()
+
+        system = None
+        for system in self.wmi.Win32_ComputerSystem():
+            pass
+
+        if system:
+            os_total = system.TotalPhysicalMemory
+            if os_total:
+                os_total = int(os_total)
+            memory[self.FIELD_OS_TOTAL] = os_total
 
         return memory

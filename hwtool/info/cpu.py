@@ -78,6 +78,29 @@ class CPU(BaseHardwareModel):
 
         return cpu
 
+    def _fetch_info_windows(self):
+        cpu_count, core_count, thread_count = 0, 0, 0
+        model, frequency = None, None
+
+        for processor in self.wmi.Win32_Processor():
+            cpu_count += 1
+            core_count += processor.NumberOfCores
+            thread_count += processor.NumberOfLogicalProcessors
+
+            frequency = processor.CurrentClockSpeed
+            model = processor.Name
+
+        cpu = OrderedDict([
+            (self.FIELD_MODEL, model),
+            (self.FIELD_FREQUENCY, frequency),
+            (self.FIELD_CPU_COUNT, cpu_count),
+            (self.FIELD_CORE_COUNT, core_count),
+            (self.FIELD_THREAD_COUNT, thread_count),
+            (self.FIELD_HT, thread_count > core_count),
+        ])
+
+        return cpu
+
     def _fetch_info(self):
         cpu = super(CPU, self)._fetch_info()
         if not cpu:

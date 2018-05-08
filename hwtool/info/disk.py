@@ -67,3 +67,31 @@ class Disk(BaseHardwareModel):
             ]))
 
         return disks
+
+    def _fetch_info_windows(self):
+        disks = []
+
+        for drive in self.wmi.Win32_DiskDrive():
+            #print(drive)
+
+            device_id = drive.DeviceID
+            disk_index = drive.Index
+
+            partitions = []
+            for partition in self.wmi.Win32_DiskPartition(DiskIndex=disk_index):
+                partitions.append(OrderedDict([
+                    (self.FIELD_PARTITION_NAME, partition.DeviceID),
+                    (self.FIELD_PARTITION_ID, partition.Index),
+                    (self.FIELD_PARTITION_SIZE, partition.Size),
+                ]))
+
+            disk = OrderedDict([
+                (self.FIELD_NAME, device_id),
+                (self.FIELD_MODEL, drive.Model),
+                (self.FIELD_SIZE, int(drive.Size)),
+                (self.FIELD_PARTITIONS, partitions),
+            ])
+
+            disks.append(disk)
+
+        return disks
